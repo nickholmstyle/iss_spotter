@@ -52,18 +52,38 @@ const fetchISSFlyOverTimes = function(coords, callback) {
     }
 
     if (response.statusCode !== 200) {
-      callback(Error(`Status code ${response.statusCode} was fetching ISS pass times: ${body}`), null);
-      return
+      callback(
+        Error(
+          `Status code ${response.statusCode} was fetching ISS pass times: ${body}`
+        ),
+        null
+      );
+      return;
     }
 
     const passes = JSON.parse(body).response;
-    callback(null, passes)
-
+    callback(null, passes);
   });
 };
 
+const nextISSTimesForMyLocation = function(callback) {
+  // empty for now
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+    fetchCoordsByIP(ip, (error, loc) => {
+      if (error) {
+        return callback(error, null);
+      }
+      fetchISSFlyOverTimes(loc, (error, nextPasses) => {
+        if (error) {
+          return callback(error, null);
+        }
+        callback(null, nextPasses);
+      });
+    });
+  });
+};
 
-
-module.exports = { fetchISSFlyOverTimes };
-
-
+module.exports = { nextISSTimesForMyLocation };
